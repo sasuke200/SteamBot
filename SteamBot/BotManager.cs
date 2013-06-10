@@ -57,8 +57,6 @@ namespace SteamBot
             for (int i = 0; i < ConfigObject.Bots.Length; i++)
             {
                 Configuration.BotInfo info = ConfigObject.Bots[i];
-                mainLog.Info("Launching Bot " + info.DisplayName + "...");
-
                 var v = new RunningBot(useSeparateProcesses, i, ConfigObject);
                 botProcs.Add(v);
             }
@@ -78,7 +76,7 @@ namespace SteamBot
             foreach (var runningBot in botProcs)
             {
                 runningBot.Start();
-
+                mainLog.Info ("Launching Bot " + runningBot.BotConfig.DisplayName + "...");
                 Thread.Sleep(2000);
             }
 

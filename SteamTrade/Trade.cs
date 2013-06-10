@@ -124,6 +124,8 @@ namespace SteamTrade
 
         public delegate void SuccessfulInit ();
 
+        public delegate void TradeComplete(bool success, TradeStatus status, string tradeid);
+
         public delegate void UserAddItemHandler (Schema.Item schemaItem,Inventory.Item inventoryItem);
 
         public delegate void UserRemoveItemHandler (Schema.Item schemaItem,Inventory.Item inventoryItem);
@@ -151,6 +153,11 @@ namespace SteamTrade
         /// This occurs after Inventories have been loaded.
         /// </summary>
         public event SuccessfulInit OnAfterInit;
+
+        /// <summary>
+        /// This occurs when the trade completes.
+        /// </summary>
+        public event TradeComplete OnTradeComplete;
 
         /// <summary>
         /// This occurs when the other user adds an item to the trade.
@@ -377,6 +384,7 @@ namespace SteamTrade
         /// </summary>
         public bool SetReady (bool ready)
         {
+            Poll();
             // testing
             ValidateLocalTradeItems ();
 
@@ -429,14 +437,37 @@ namespace SteamTrade
             if (status == null)
                 throw new TradeException ("The web command to get the trade status failed.");
 
-            // I've noticed this when the trade is cancelled.
-            if (status.trade_status == 3)
+            if (status.them != null)
             {
-                if (OnError != null)
-                    OnError ("Trade was cancelled by other user.");
-
-                OtherUserCancelled = true;
-                return otherDidSomething;
+                if (status.them.connection_pending)
+                    Console.WriteLine("They are still connecting");
+            }
+            // I've noticed this when the trade is cancelled.
+            switch (status.trade_status)
+            {
+                case TradeStatus.TradeCanceledByOtherUser:
+                    if (OnTradeComplete != null)
+                        OnTradeComplete (status.success, TradeStatus.TradeCanceledByOtherUser, null);
+                    OtherUserCancelled = true;
+                    break;
+                case TradeStatus.InTrade:
+                    break;
+                case TradeStatus.TradeFailed:
+                    if (OnTradeComplete != null)
+                        OnTradeComplete (status.success, TradeStatus.TradeFailed, null);
+                    break;
+                case TradeStatus.TradeComplete:
+                    if (OnTradeComplete != null)
+                        OnTradeComplete (status.success, TradeStatus.TradeComplete, status.tradeid);
+                    break;
+                case Trade.TradeStatus.TradePartnerTimeout:
+                    if (OnTradeComplete != null)
+                        OnTradeComplete (status.success, TradeStatus.TradePartnerTimeout, null);
+                    break;
+                default:
+                    if (OnError != null)
+                        OnError("Unexpected Event");
+                    break;
             }
 
             if (status.events != null)

@@ -110,6 +110,32 @@ namespace SteamBot
 
         public abstract void OnTradeInit ();
 
+        public virtual void OnTradeComplete(bool success, Trade.TradeStatus status, string tradeid)
+        {
+            if (success)
+            {
+                switch (status)
+                {
+                    case Trade.TradeStatus.TradeFailed:
+                        Log.Error ("Steam has failed the trade");
+                        break;
+                    case Trade.TradeStatus.TradeCanceledByOtherUser:
+                        Log.Error ("Trade was cancelled by the other user");
+                        break;
+                    case Trade.TradeStatus.TradeComplete:
+                        Log.Success("Trade: " + tradeid + " complete!");
+                        break;
+                    case Trade.TradeStatus.TradePartnerTimeout:
+                        Log.Error("User has timed out from the trade");
+                        break;
+                    default:
+                        Log.Warn("Undefined trade status");
+                        break;
+                }
+            }
+            Bot.CloseTrade ();
+        }
+
         public abstract void OnTradeAddItem (Schema.Item schemaItem, Inventory.Item inventoryItem);
 
         public abstract void OnTradeRemoveItem (Schema.Item schemaItem, Inventory.Item inventoryItem);

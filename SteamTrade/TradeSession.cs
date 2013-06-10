@@ -62,7 +62,7 @@ namespace SteamTrade
         }
         
         /// <summary>
-        /// Adds a specified itom by its itemid.  Since each itemid is
+        /// Adds a specified item by its itemid.  Since each itemid is
         /// unique to each item, you'd first have to find the item, or
         /// use AddItemByDefindex instead.
         /// </summary>
@@ -201,6 +201,8 @@ namespace SteamTrade
             cookies = new CookieContainer();
             cookies.Add (new Cookie ("sessionid", sessionId, String.Empty, SteamCommunityDomain));
             cookies.Add (new Cookie ("steamLogin", steamLogin, String.Empty, SteamCommunityDomain));
+            cookies.Add (new Cookie("bCompletedTradeTutorial", "true", String.Empty, SteamCommunityDomain));
+            cookies.Add (new Cookie("Steam_Language", "english", String.Empty, SteamCommunityDomain));
 
             baseTradeURL = String.Format (SteamTradeUrl, OtherSID.ConvertToUInt64 ());
         }
@@ -213,7 +215,9 @@ namespace SteamTrade
             
             public bool success { get; set; }
             
-            public long trade_status { get; set; }
+            public TradeStatus trade_status { get; set; }
+
+            public string tradeid { get; set; }
             
             public int version { get; set; }
             
@@ -235,6 +239,10 @@ namespace SteamTrade
             public ulong timestamp { get; set; }
             
             public int appid { get; set; }
+
+            public string old_amount { get; set; }
+
+            public string amount { get; set; }
             
             public string text { get; set; }
             
@@ -270,6 +278,23 @@ namespace SteamTrade
             public int confirmed { get; set; }
             
             public int sec_since_touch { get; set; }
+
+            public bool connection_pending { get; set; }
+            // unknown !!
+            public dynamic assets { get; set; }
+
+            public TradeCurrency[] currency { get; set; }
+        }
+
+        public class TradeCurrency
+        {
+            public string appid { get; set; }
+
+            public string currencyid { get; set; }
+
+            public string amount { get; set; }
+
+            public string contextid { get; set; }
         }
 
         public enum TradeEventType : int
@@ -279,7 +304,17 @@ namespace SteamTrade
             UserSetReady = 2,
             UserSetUnReady = 3,
             UserAccept = 4,
+            CurrencyAdded = 5,
             UserChat = 7
+        }
+
+        public enum TradeStatus : long
+        {
+            InTrade = 0,
+            TradeComplete = 1,
+            TradeCanceledByOtherUser = 3,
+            TradePartnerTimeout = 4,
+            TradeFailed = 5
         }
     }
 

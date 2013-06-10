@@ -606,6 +606,7 @@ namespace SteamBot
             trade.OnError += handler.OnTradeError;
             //trade.OnTimeout += OnTradeTimeout;
             trade.OnAfterInit += handler.OnTradeInit;
+            trade.OnTradeComplete += handler.OnTradeComplete;
             trade.OnUserAddItem += handler.OnTradeAddItem;
             trade.OnUserRemoveItem += handler.OnTradeRemoveItem;
             trade.OnMessage += handler.OnTradeMessage;
@@ -622,6 +623,7 @@ namespace SteamBot
             trade.OnError -= handler.OnTradeError;
             //Trade.OnTimeout -= OnTradeTimeout;
             trade.OnAfterInit -= handler.OnTradeInit;
+            trade.OnTradeComplete += handler.OnTradeComplete;
             trade.OnUserAddItem -= handler.OnTradeAddItem;
             trade.OnUserRemoveItem -= handler.OnTradeRemoveItem;
             trade.OnMessage -= handler.OnTradeMessage;
