@@ -26,10 +26,13 @@ namespace SteamTrade
             }
         }
 
-        public static HttpWebResponse Request (string url, string method, NameValueCollection data = null, CookieContainer cookies = null, bool ajax = true)
+        public static HttpWebResponse Request (string url, string method, NameValueCollection data = null, CookieContainer cookies = null, bool ajax = true, DateTime modifiedSince = default(DateTime))
         {
             HttpWebRequest request = WebRequest.Create (url) as HttpWebRequest;
-
+            if (modifiedSince != default(DateTime))
+            {
+                request.IfModifiedSince = modifiedSince;
+            }
             request.Method = method;
             request.Accept = "application/json, text/javascript;q=0.9, */*;q=0.5";
             request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";

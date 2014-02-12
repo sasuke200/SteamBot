@@ -47,43 +47,51 @@ namespace SteamTrade
                 }
             }
 
-            HttpWebResponse response = SteamWeb.Request(url, "GET");
+            DateTime schemaLastModified = File.Exists(cachefile) ? File.GetCreationTime(cachefile) : default(DateTime);
 
-            DateTime schemaLastModified = response.LastModified;
-
-            string result = GetSchemaString(response, schemaLastModified);
-
-            response.Close();
+            string result = String.Empty;
+            try
+            {
+                HttpWebResponse response = SteamWeb.Request(url, "GET", null, null, false, schemaLastModified);
+                result = GetSchemaString(response);
+            }
+            catch (WebException ex)
+            {
+                result = GetSchemaString((HttpWebResponse)ex.Response);
+            }
 
             // were done here. let others read.
             mre.Set();
 
-            SchemaResult schemaResult = JsonConvert.DeserializeObject<SchemaResult> (result);
-            return schemaResult.result ?? null;
+            Schema schemaResult = result != null ? JsonConvert.DeserializeObject<SchemaResult>(result).result : null;
+
+            return schemaResult;
         }
 
         // Gets the schema from the web or from the cached file.
-        private static string GetSchemaString(HttpWebResponse response, DateTime schemaLastModified)
+        private static string GetSchemaString(HttpWebResponse response)
         {
-            string result;
-            bool mustUpdateCache = !File.Exists(cachefile) || schemaLastModified > File.GetCreationTime(cachefile);
-
-            if (mustUpdateCache)
+            string result = String.Empty;
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                var reader = new StreamReader(response.GetResponseStream());
-                result = reader.ReadToEnd();
-
-                File.WriteAllText(cachefile, result);
-                File.SetCreationTime(cachefile, schemaLastModified);
+                response.Close();
+                result = File.Exists(cachefile) ? File.ReadAllText(cachefile) : null;
             }
             else
             {
-                // read previously cached file.
-                TextReader reader = new StreamReader(cachefile);
-                result = reader.ReadToEnd();
-                reader.Close();
+                using (var responseStream = response.GetResponseStream())
+                {
+                    if (responseStream != null)
+                    {
+                        using (var reader = new StreamReader(responseStream))
+                        {
+                            result = reader.ReadToEnd();
+                            File.WriteAllText(cachefile, result);
+                            File.SetCreationTime(cachefile, response.LastModified);
+                        }
+                    }
+                }
             }
-
             return result;
         }
 
