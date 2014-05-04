@@ -163,6 +163,7 @@ namespace SteamTrade.TradeOffer
 
         public TradeOffer NewOffer(SteamID other)
         {
+            session = new OfferSession(sid, tkon, webApi);
             var offer = new TradeOffer(session, other);
             return offer;
         }
