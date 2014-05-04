@@ -240,7 +240,7 @@ namespace SteamBot
         /// </summary>
         /// <param name="other">SteamId of the partner</param>
         /// <returns></returns>
-        public TradeOffer NewTradeOffer(SteamID other)
+        public TradeOffer NewTradeOffer(SteamID other, string sid, string tkon, TradeOfferWebAPI webApi)
         {
             TradeOfferWebAPI webApi = new TradeOfferWebAPI(this.apiKey);
             return tradeOfferManager.NewOffer(other, sessionId, token, webApi);
