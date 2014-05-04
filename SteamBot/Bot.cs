@@ -242,7 +242,8 @@ namespace SteamBot
         /// <returns></returns>
         public TradeOffer NewTradeOffer(SteamID other)
         {
-            return tradeOfferManager.NewOffer(other);
+            TradeOfferWebAPI webApi = new TradeOfferWebAPI(this.apiKey);
+            return tradeOfferManager.NewOffer(other, sessionId, token, webApi);
         }
 
         /// <summary>
